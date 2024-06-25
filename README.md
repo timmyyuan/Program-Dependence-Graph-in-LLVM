@@ -1,5 +1,19 @@
 # Parameter-tree based Program Dependence Graph (PDG)
 
+## Updated for LLVM 18
+
+### Build
+
+```
+cmake -DLLVM_DIR=$(llvm-config --prefix) ..
+```
+
+### Usage
+
+```
+opt -load /path/to/libpdg.so --bugpoint-enable-legacy-pm --disable-output --dot-ddg /path/to/file.bc
+```
+
 ## Introduction
 
 This project is a key component of our PtrSplit and Program-mandering works. It aims at building a modular inter-procedural program dependence graph (PDG) for practical use. 

@@ -253,6 +253,39 @@ struct DOTGraphTraits<pdg::ControlDependencyGraph *> : public DOTGraphTraits<pdg
   {
     return DOTGraphTraits<pdg::DependencyGraph<InstructionWrapper> *>::getNodeLabel(Node, Graph->_getCDG());
   }
+
+  std::string getNodeAttributes(pdg::DependencyNode<InstructionWrapper> *Node, pdg::ControlDependencyGraph *Graph)
+  {
+    using namespace pdg;
+
+    std::string attrs = "";
+
+    auto instW = Node->getData();
+
+    attrs += "op=\"" + instW->getOpTypeOrNull() +"\"";
+
+    switch (instW->getGraphNodeType())
+    {
+    case GraphNodeType::ENTRY:
+    case GraphNodeType::GLOBAL_VALUE:
+    case GraphNodeType::STRUCT_FIELD:
+      break;
+    case GraphNodeType::FORMAL_IN:
+    case GraphNodeType::ACTUAL_IN:
+    case GraphNodeType::FORMAL_OUT:
+    case GraphNodeType::ACTUAL_OUT:
+    case GraphNodeType::PARAMETER_FIELD:
+      attrs += ", color=\"blue\"";
+      break;
+    case GraphNodeType::POINTER_RW:
+      attrs += ", color=\"red\"";
+      break;
+    default:
+      break;
+    }
+
+    return attrs;
+  }
 };
 
 // DDG
@@ -269,6 +302,39 @@ struct DOTGraphTraits<pdg::DataDependencyGraph *> : public DOTGraphTraits<pdg::D
   std::string getNodeLabel(pdg::DependencyNode<InstructionWrapper> *Node, pdg::DataDependencyGraph *Graph)
   {
     return DOTGraphTraits<pdg::DependencyGraph<InstructionWrapper> *>::getNodeLabel(Node, Graph->_getDDG());
+  }
+
+  std::string getNodeAttributes(pdg::DependencyNode<InstructionWrapper> *Node, pdg::DataDependencyGraph *Graph)
+  {
+    using namespace pdg;
+
+    std::string attrs = "";
+
+    auto instW = Node->getData();
+
+    attrs += "op=\"" + instW->getOpTypeOrNull() +"\"";
+
+    switch (instW->getGraphNodeType())
+    {
+    case GraphNodeType::ENTRY:
+    case GraphNodeType::GLOBAL_VALUE:
+    case GraphNodeType::STRUCT_FIELD:
+      break;
+    case GraphNodeType::FORMAL_IN:
+    case GraphNodeType::ACTUAL_IN:
+    case GraphNodeType::FORMAL_OUT:
+    case GraphNodeType::ACTUAL_OUT:
+    case GraphNodeType::PARAMETER_FIELD:
+      attrs += ", color=\"blue\"";
+      break;
+    case GraphNodeType::POINTER_RW:
+      attrs += ", color=\"red\"";
+      break;
+    default:
+      break;
+    }
+
+    return attrs;
   }
 };
 
@@ -343,37 +409,33 @@ struct DOTGraphTraits<pdg::ProgramDependencyGraph *> : public DOTGraphTraits<pdg
   {
     using namespace pdg;
 
+    std::string attrs = "";
+
     auto instW = Node->getData();
 
-    if (instW == nullptr)
-    {
-      //errs() << "instW " << instW << "\n";
-      return "null instW";
-    }
+    attrs += "op=\"" + instW->getOpTypeOrNull() +"\"";
 
     switch (instW->getGraphNodeType())
     {
     case GraphNodeType::ENTRY:
-      return "";
     case GraphNodeType::GLOBAL_VALUE:
-      return "";
-    case GraphNodeType::FORMAL_IN:
-      return "color=\"blue\"";
-    case GraphNodeType::ACTUAL_IN:
-      return "color=\"blue\"";
-    case GraphNodeType::FORMAL_OUT:
-      return "color=\"blue\"";
-    case GraphNodeType::ACTUAL_OUT:
-      return "color=\"blue\"";
-    case GraphNodeType::PARAMETER_FIELD:
-      return "color=\"blue\"";
-    case GraphNodeType::POINTER_RW:
-      return "color=\"red\"";
     case GraphNodeType::STRUCT_FIELD:
-      return "";
+      break;
+    case GraphNodeType::FORMAL_IN:
+    case GraphNodeType::ACTUAL_IN:
+    case GraphNodeType::FORMAL_OUT:
+    case GraphNodeType::ACTUAL_OUT:
+    case GraphNodeType::PARAMETER_FIELD:
+      attrs += ", color=\"blue\"";
+      break;
+    case GraphNodeType::POINTER_RW:
+      attrs += ", color=\"red\"";
+      break;
     default:
-      return "";
+      break;
     }
+
+    return attrs;
   }
 
   std::string getGraphProperties(pdg::ProgramDependencyGraph *Graph)
