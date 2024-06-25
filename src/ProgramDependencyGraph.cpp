@@ -83,8 +83,8 @@ bool pdg::ProgramDependencyGraph::runOnModule(Module &M)
 bool pdg::ProgramDependencyGraph::processIndirectCallInst(CallInst *CI, InstructionWrapper *instW)
 {
   auto &pdgUtils = PDGUtils::getInstance();
-  Type *t = CI->getCalledValue()->getType();
-  FunctionType *funcTy = cast<FunctionType>(cast<PointerType>(t)->getElementType());
+  Type *t = CI->getCalledOperand()->getType();
+  FunctionType *funcTy = dyn_cast<FunctionType>(t);
   // collect all possible function with same function signature
   std::vector<Function *> indirect_call_candidates = collectIndirectCallCandidates(funcTy);
   if (indirect_call_candidates.size() == 0)
@@ -265,7 +265,9 @@ void pdg::ProgramDependencyGraph::buildFormalTreeForArg(Argument &arg, TreeType 
     {
       errs() << "OS.str() = " << OS.str() << " FILE* appears, stop buildTypeTree\n";
     }
-    else if (treeTyW->getTreeNodeType()->isPointerTy() && treeTyW->getTreeNodeType()->getContainedType(0)->isFunctionTy())
+    else if (treeTyW->getTreeNodeType()->isPointerTy() && 
+      treeTyW->getTreeNodeType()->getNumContainedTypes() > 0 && 
+      treeTyW->getTreeNodeType()->getContainedType(0)->isFunctionTy())
     {
       errs() << *arg.getParent()->getFunctionType() << " DEBUG 312: in buildFormalTree: function pointer arg = " << *treeTyW->getTreeNodeType() << "\n";
     }
@@ -315,18 +317,13 @@ bool pdg::ProgramDependencyGraph::isFilePtrOrFuncTy(Type *ty)
     return true;
   }
 
-  if (ty->isPointerTy())
-  {
-    Type *childEleTy = dyn_cast<PointerType>(ty)->getElementType();
-    if (childEleTy->isStructTy())
-    {
-      std::string Str;
-      raw_string_ostream OS(Str);
-      OS << ty;
-      //FILE*, bypass, no need to buildTypeTree
-      if ("%struct._IO_FILE*" == OS.str() || "%struct._IO_marker*" == OS.str())
-        return true;
-    }
+  if (ty->isStructTy()) {
+    std::string Str;
+    raw_string_ostream OS(Str);
+    OS << ty;
+    //FILE*, bypass, no need to buildTypeTree
+    if ("%struct._IO_FILE*" == OS.str() || "%struct._IO_marker*" == OS.str())
+      return true;
   }
   return false;
 }
@@ -337,11 +334,10 @@ InstructionWrapper *pdg::ProgramDependencyGraph::buildPointerTypeNode(ArgumentWr
   TreeType treeTy = TreeType::FORMAL_IN_TREE;
   Argument &arg = *argW->getArg();
   PointerType *pt = dyn_cast<PointerType>(curTyNode->getTreeNodeType());
-  Type *pointedNodeTy = pt->getElementType();
   InstructionWrapper *pointedTypeW = new TreeTypeWrapper(arg.getParent(),
                                                          GraphNodeType::PARAMETER_FIELD,
                                                          &arg,
-                                                         pointedNodeTy,
+                                                         pt,
                                                          curTyNode->getTreeNodeType(),
                                                          0);
   pdgUtils.getFuncInstWMap()[arg.getParent()].insert(pointedTypeW);
@@ -794,8 +790,6 @@ InstructionWrapper *pdg::ProgramDependencyGraph::getTreeNodeGEP(Argument &arg, u
       // plus one. Since for struct, the 0 index is used by the parent struct
       // type parent_type must be a pointer. Since only sub fields can have
       // parent that is not nullptr
-      if (parentNodeTy->isPointerTy())
-        parentNodeTy = parentNodeTy->getPointerElementType();
 
       // check the src type in GEP inst is equal to parent_type (GET FROM)
       // check if the offset is equal

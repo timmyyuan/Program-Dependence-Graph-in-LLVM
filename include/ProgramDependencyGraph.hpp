@@ -1,7 +1,7 @@
 #ifndef PROGRAMDEPENDENCYGRAPH_H_
 #define PROGRAMDEPENDENCYGRAPH_H_
 #include "llvm/IR/Module.h"
-#include "llvm/PassAnalysisSupport.h"
+#include "llvm/Pass.h"
 #include "ControlDependencyGraph.hpp"
 #include "DataDependencyGraph.hpp"
 #include "llvm/IR/DebugInfo.h"
@@ -16,6 +16,8 @@ class ProgramDependencyGraph : public llvm::ModulePass
 {
 public:
   static char ID;
+  using Result=DependencyGraph<InstructionWrapper>;
+  
   ProgramDependencyGraph() : llvm::ModulePass(ID) { PDG = new DependencyGraph<InstructionWrapper>(); }
   ~ProgramDependencyGraph() { delete PDG; }
   bool runOnModule(llvm::Module &M);

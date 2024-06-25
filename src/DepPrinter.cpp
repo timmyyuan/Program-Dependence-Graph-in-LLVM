@@ -168,14 +168,11 @@ struct DOTGraphTraits<pdg::DependencyNode<pdg::InstructionWrapper> *> : public D
       llvm::AllocaInst *allocaInst = dyn_cast<AllocaInst>(inst);
       // processing differently when get a struct pointer
       llvm::StringRef struct_name = "";
-      if (allocaInst->getAllocatedType()->isPointerTy())
-      {
-        llvm::PointerType *pt = dyn_cast<llvm::PointerType>(allocaInst->getAllocatedType());
-        struct_name = pt->getElementType()->getStructName();
-      }
-      else
+      if (allocaInst->getAllocatedType()->isStructTy())
       {
         struct_name = allocaInst->getAllocatedType()->getStructName();
+      } else {
+        struct_name = "<unknown alloc ptr>";
       }
 
       std::string struct_string = struct_name.str();
@@ -386,9 +383,9 @@ struct DOTGraphTraits<pdg::ProgramDependencyGraph *> : public DOTGraphTraits<pdg
 };
 } // namespace llvm
 
-struct ControlDependencyPrinter : public llvm::DOTGraphTraitsPrinter<pdg::ControlDependencyGraph, false> {
+struct ControlDependencyPrinter : public llvm::DOTGraphTraitsPrinterWrapperPass<pdg::ControlDependencyGraph, false> {
     static char ID;
-    ControlDependencyPrinter() : DOTGraphTraitsPrinter<pdg::ControlDependencyGraph, false>("cdgragh", ID) {}
+    ControlDependencyPrinter() : llvm::DOTGraphTraitsPrinterWrapperPass<pdg::ControlDependencyGraph, false>("cdgragh", ID) {}
 };
 
 char ControlDependencyPrinter::ID = 0;
@@ -398,9 +395,9 @@ static llvm::RegisterPass<ControlDependencyPrinter>
                    false, false);
 
 
-struct DataDependencyPrinter : public llvm::DOTGraphTraitsPrinter<pdg::DataDependencyGraph, false> {
+struct DataDependencyPrinter : public llvm::DOTGraphTraitsPrinterWrapperPass<pdg::DataDependencyGraph, false> {
     static char ID;
-    DataDependencyPrinter() : DOTGraphTraitsPrinter<pdg::DataDependencyGraph, false>("ddgragh", ID) {}
+    DataDependencyPrinter() : llvm::DOTGraphTraitsPrinterWrapperPass<pdg::DataDependencyGraph, false>("ddgragh", ID) {}
 };
 
 char DataDependencyPrinter::ID = 0;
@@ -409,10 +406,10 @@ static llvm::RegisterPass<DataDependencyPrinter>
                    "Print data dependency graph of function to 'dot' file",
                    false, false);
 
-struct ProgramDependencyPrinter : public llvm::DOTGraphTraitsPrinter<pdg::ProgramDependencyGraph, false>
+struct ProgramDependencyPrinter : public llvm::DOTGraphTraitsPrinterWrapperPass<pdg::ProgramDependencyGraph, false>
 {
   static char ID;
-  ProgramDependencyPrinter() : llvm::DOTGraphTraitsPrinter<pdg::ProgramDependencyGraph, false>("pdgragh", ID) {}
+  ProgramDependencyPrinter() : llvm::DOTGraphTraitsPrinterWrapperPass<pdg::ProgramDependencyGraph, false>("pdgragh", ID) {}
 };
 
 char ProgramDependencyPrinter::ID = 0;

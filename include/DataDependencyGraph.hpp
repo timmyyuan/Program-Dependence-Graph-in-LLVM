@@ -7,8 +7,7 @@
 #include "llvm/ADT/SmallVector.h"
 #include "llvm/Analysis/MemoryBuiltins.h"
 #include "llvm/Analysis/MemoryDependenceAnalysis.h"
-#include "llvm/Analysis/CFLSteensAliasAnalysis.h"
-#include "llvm/Analysis/CFLAndersAliasAnalysis.h"
+#include "llvm/Analysis/BasicAliasAnalysis.h"
 
 #include "DependencyGraph.hpp"
 #include "CallWrapper.hpp"
@@ -51,9 +50,9 @@ public:
 private:
   DependencyGraph<InstructionWrapper> *DDG;
   llvm::Function *Func;
-  llvm::CFLSteensAAResult *steenAA;
-  llvm::CFLAndersAAResult *andersAA;
   llvm::MemoryDependenceResults *MD;
+
+  llvm::AAResults *AA;
 };
 } // namespace pdg
 

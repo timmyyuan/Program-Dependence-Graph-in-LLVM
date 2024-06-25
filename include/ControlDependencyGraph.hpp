@@ -3,7 +3,6 @@
 #include "llvm/Analysis/PostDominators.h"
 #include "llvm/IR/BasicBlock.h"
 #include "llvm/IR/Function.h"
-#include "llvm/PassAnalysisSupport.h"
 #include "llvm/Pass.h"
 
 #include "DependencyGraph.hpp"
@@ -14,6 +13,8 @@ namespace pdg {
 class ControlDependencyGraph : public llvm::FunctionPass
 {
   public:
+    using Result=DependencyGraph<InstructionWrapper>;
+    
     static char ID;
     ControlDependencyGraph() : llvm::FunctionPass(ID)
     {
