@@ -46,6 +46,17 @@ public:
   virtual void getAnalysisUsage(llvm::AnalysisUsage &AU) const;
   virtual llvm::StringRef getPassName() const { return "Data Dependency Graph"; }
   DependencyGraph<InstructionWrapper> *_getDDG() {return DDG;}
+  
+  bool isAlias(llvm::LoadInst *lhs, llvm::LoadInst *rhs) {
+    return lhs->getPointerOperand() == rhs->getPointerOperand();
+  }
+  bool isAlias(llvm::LoadInst *lhs, llvm::StoreInst *rhs) {
+    return lhs->getPointerOperand() == rhs->getPointerOperand();
+  }
+  bool isAlias(llvm::StoreInst *lhs, llvm::StoreInst *rhs) {
+    return lhs->getPointerOperand() == rhs->getPointerOperand();
+  }
+
 
 private:
   DependencyGraph<InstructionWrapper> *DDG;

@@ -4,6 +4,7 @@
 #include "llvm/Analysis/AliasAnalysis.h"
 
 #include "DataDependencyGraph.hpp"
+
 using namespace llvm;
 
 char pdg::DataDependencyGraph::ID = 0;
@@ -55,11 +56,9 @@ void pdg::DataDependencyGraph::collectAliasDependencies()
 
   for (StoreInst *si : storeVec)
   {
-    MemoryLocation s_loc = MemoryLocation::get(si);
     for (LoadInst *li : loadVec)
     {
-      MemoryLocation l_loc = MemoryLocation::get(li);
-      if (!AA->isNoAlias(s_loc, l_loc))
+      if (isAlias(li, si))
       {
         InstructionWrapper *loadInstW = instMap[li];
         InstructionWrapper *storeInstW = instMap[si];
@@ -71,8 +70,7 @@ void pdg::DataDependencyGraph::collectAliasDependencies()
     for (StoreInst *si1 : storeVec) {
       if (si == si1)
         continue;
-      MemoryLocation s1_loc = MemoryLocation::get(si1);
-      if (!AA->isNoAlias(s_loc, s1_loc)) {
+      if (isAlias(si, si1)) {
         InstructionWrapper *store1InstW = PDGUtils::getInstance().getInstMap()[si];
         InstructionWrapper *store2InstW = PDGUtils::getInstance().getInstMap()[si1];
         DDG->addDependency(store1InstW, store2InstW, DependencyType::DATA_ALIAS);
@@ -90,8 +88,6 @@ void pdg::DataDependencyGraph::collectAliasDependencies()
       {
         continue;
       }
-      MemoryLocation li1_loc = MemoryLocation::get(li1);
-      MemoryLocation li2_loc = MemoryLocation::get(li2);
 
       Type *li1LocTy = li1->getPointerOperandType();
       Type *li2LocTy = li2->getPointerOperandType();
@@ -101,7 +97,7 @@ void pdg::DataDependencyGraph::collectAliasDependencies()
         continue;
       }
 
-      if (!AA->isNoAlias(li1_loc, li2_loc))
+      if (isAlias(li1, li2))
       {
         InstructionWrapper *loadInstW1 = instMap[li1];
         InstructionWrapper *loadInstW2 = instMap[li2];
@@ -180,11 +176,9 @@ std::vector<Instruction *> pdg::DataDependencyGraph::getRAWDepList(Instruction *
   std::vector<StoreInst *> StoreVec = PDGUtils::getInstance().getFuncMap()[Func]->getStoreInstList();
   // for each Load Instruction, find related Store Instructions(alias considered)
   LoadInst *LI = dyn_cast<LoadInst>(pLoadInst);
-  MemoryLocation LI_Loc = MemoryLocation::get(LI);
   for (StoreInst *SI : StoreVec)
   {
-    MemoryLocation SI_Loc = MemoryLocation::get(SI);
-    if (!AA->isNoAlias(LI_Loc, SI_Loc))
+    if (isAlias(LI, SI))
     {
       _flowdep_set.push_back(SI);
     }

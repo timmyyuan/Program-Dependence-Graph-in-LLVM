@@ -1,7 +1,10 @@
-#include "ProgramDependencyGraph.hpp"
+
 #include "llvm/Analysis/DOTGraphTraitsPass.h"
 #include "llvm/ADT/GraphTraits.h"
 #include "llvm/Support/TypeName.h"
+
+#include "ProgramDependencyGraph.hpp"
+#include "DOTGraphPrinter.h"
 
 namespace llvm
 {
@@ -457,9 +460,9 @@ static llvm::RegisterPass<ControlDependencyPrinter>
                    false, false);
 
 
-struct DataDependencyPrinter : public llvm::DOTGraphTraitsPrinterWrapperPass<pdg::DataDependencyGraph, false> {
+struct DataDependencyPrinter : public llvm::CustomGraphPrinterWrapperPass<pdg::DataDependencyGraph, false> {
     static char ID;
-    DataDependencyPrinter() : llvm::DOTGraphTraitsPrinterWrapperPass<pdg::DataDependencyGraph, false>("ddgragh", ID) {}
+    DataDependencyPrinter() : llvm::CustomGraphPrinterWrapperPass<pdg::DataDependencyGraph, false>("ddgragh", ID) {}
 };
 
 char DataDependencyPrinter::ID = 0;
