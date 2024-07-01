@@ -25,6 +25,10 @@ public:
   DependencyType getDepType(const NodeT *data1, const NodeT *data2);
   nodes_iterator begin_child() { return nodes_iterator(nodeSet.begin()); }
   nodes_iterator end_child() { return nodes_iterator(nodeSet.end()); }
+  void clear() {
+    nodeSet.clear();
+    DataToNodeMap.clear();
+  }
 
 private:
   std::vector<DependencyNode<NodeT> *> nodeSet;

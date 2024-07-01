@@ -49,22 +49,9 @@ class InstructionWrapper {
       this->access_type = AccessType::NOACCESS;
     }
 
-    std::string getOpTypeOrNull() const {
-      if (!this->Inst) {
-        return "unnamed";
-      }
-
-      std::string result = this->Inst->getOpcodeName();
-      if (auto *call = llvm::dyn_cast<llvm::CallBase>(this->Inst)) {
-        if (auto *fn = call->getCalledFunction()) {
-          if (fn->isIntrinsic() && fn->hasName()) {
-            result = fn->getName().str();
-          }
-        }
-      }
-
-      return result;
-    }
+    std::string getOpTypeOrNull() const;
+    std::string getBasicBlockIndex() const;
+    std::string getDotAttrs() const;
 
     llvm::BasicBlock *getBasicBlock() const { return BB; }
     llvm::Instruction *getInstruction() const { return Inst; }

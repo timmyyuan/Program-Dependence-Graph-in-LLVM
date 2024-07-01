@@ -3,11 +3,14 @@
 
 #include "llvm/Analysis/CFGPrinter.h"
 #include "llvm/Support/FileSystem.h"
+#include "llvm/Support/LockFileManager.h"
 #include "llvm/Support/GraphWriter.h"
 #include "llvm/Support/Path.h"
 #include <unordered_set>
 
 namespace llvm {
+
+class LockFileManager;
 
 template <typename GraphT>
 void printGraphForFuncWithFilename(Function &F, GraphT Graph, StringRef Name,
@@ -25,6 +28,11 @@ void printGraphForFuncWithFilename(Function &F, GraphT Graph, StringRef Name,
   shortenFileName(Filename);
   Filename = Filename + ".dot";
   std::error_code EC;
+
+  if (sys::fs::exists(Filename)) {
+    errs() << "Skip repeat '" << Filename << "'...\n";
+    return;
+  }
 
   errs() << "Writing '" << Filename << "'...";
 

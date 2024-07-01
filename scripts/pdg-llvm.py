@@ -13,6 +13,9 @@ def get_libpdg_path(prefix='build'):
     return os.path.join(root, prefix, 'libpdg.so')
 
 def make_workspace(directory=DefaultWorkspace):
+    if os.path.exists(directory):
+        os.remove(directory)
+
     if not os.path.exists(directory):
         os.makedirs(directory)
 

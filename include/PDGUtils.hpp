@@ -11,6 +11,10 @@ namespace pdg {
 class PDGUtils final
 {
   private:
+    std::map<llvm::Value*, std::unique_ptr<InstructionWrapper>> instWrapperAllocator;
+    std::map<llvm::Function*, std::unique_ptr<FunctionWrapper>> funcWrapperAllocator;
+
+    std::set<llvm::Module*> visitedModules;
     std::map<const llvm::Instruction *, InstructionWrapper *> G_instMap;
     std::set<InstructionWrapper *> G_globalInstsSet;
     std::map<const llvm::Function *, std::set<InstructionWrapper *>> G_funcInstWMap;
@@ -29,6 +33,9 @@ class PDGUtils final
       static PDGUtils pdgUtils { }; 
       return pdgUtils;
     };
+
+    InstructionWrapper *getOrInsertInstWrapper(llvm::Value *);
+    FunctionWrapper *getOrInsertFuncWrapper(llvm::Function*);
 
     std::map<const llvm::Instruction *, InstructionWrapper *> &getInstMap() { return G_instMap; }
     std::set<InstructionWrapper *> &getGlobalInstsSet() { return G_globalInstsSet; }

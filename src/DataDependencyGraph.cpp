@@ -21,7 +21,7 @@ void pdg::DataDependencyGraph::constructFuncMapAndCreateFunctionEntry()
   auto& pdgUtils = PDGUtils::getInstance();
   if (pdgUtils.getFuncMap()[Func]->getEntryW() == nullptr)
   {
-    InstructionWrapper *entryW = new InstructionWrapper(Func, GraphNodeType::ENTRY);
+    InstructionWrapper *entryW = pdgUtils.getOrInsertInstWrapper(Func);
     pdgUtils.getFuncInstWMap()[Func].insert(entryW);
     pdgUtils.getFuncMap()[Func]->setEntryW(entryW);
   }
@@ -136,7 +136,20 @@ void pdg::DataDependencyGraph::collectReadFromDependency(llvm::Instruction *inst
 
 void pdg::DataDependencyGraph::collectDefUseDependency(llvm::Instruction *inst)
 {
+  Function *parent = inst->getFunction();
   // check for def-use dependencies
+  for (auto &op: inst->operands()) {
+    auto *opinst = dyn_cast<Instruction>(op.get());
+    if (!opinst || opinst->getFunction() != parent) {
+      continue;
+    }
+
+    auto &instmap = PDGUtils::getInstance().getInstMap();
+
+    DDG->addDependency(instmap[opinst], instmap[inst], DependencyType::DATA_DEF_USE);
+  }
+
+  /*
   for (Instruction::const_op_iterator cuit = inst->op_begin();
        cuit != inst->op_end(); ++cuit)
   {
@@ -147,7 +160,7 @@ void pdg::DataDependencyGraph::collectDefUseDependency(llvm::Instruction *inst)
                          PDGUtils::getInstance().getInstMap()[inst],
                          DependencyType::DATA_DEF_USE);
     }
-  }
+  }*/
 }
 
 void pdg::DataDependencyGraph::collectCallInstDependency(llvm::Instruction *inst)
@@ -237,11 +250,17 @@ typename pdg::DependencyNode<pdg::InstructionWrapper>::DependencyLinkList pdg::D
 bool pdg::DataDependencyGraph::runOnFunction(Function &F)
 {
   Func = &F;
+  DDG->clear();
+  /*
+  if (!F.hasName() || F.getName() != "access_utf8") {
+    return false;
+  }*/
+
   PDGUtils::getInstance().constructFuncMap(*F.getParent());
   initializeMemoryDependencyPasses();
   constructFuncMapAndCreateFunctionEntry();
   collectDataDependencyInFunc();
-  collectAliasDependencies();
+  // collectAliasDependencies();
   return false;
 }
 
