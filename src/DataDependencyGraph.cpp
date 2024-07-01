@@ -34,6 +34,7 @@ void pdg::DataDependencyGraph::collectDataDependencyInFunc()
     getNodeByData(&*instIt);
     Instruction *inst = dyn_cast<Instruction>(&*instIt);
     collectDefUseDependency(inst);
+/*
     collectCallInstDependency(inst);
 
     if (isa<LoadInst>(inst))
@@ -42,6 +43,7 @@ void pdg::DataDependencyGraph::collectDataDependencyInFunc()
       collectRAWDependency(inst);
       collectNonLocalDependency(inst);
     }
+*/
   }
 }
 
