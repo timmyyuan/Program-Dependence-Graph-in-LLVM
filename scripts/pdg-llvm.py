@@ -2,6 +2,7 @@
 
 import os
 import sys
+import shutil
 import subprocess
 from concurrent.futures import ThreadPoolExecutor
 
@@ -14,7 +15,7 @@ def get_libpdg_path(prefix='build'):
 
 def make_workspace(directory=DefaultWorkspace):
     if os.path.exists(directory):
-        os.remove(directory)
+        shutil.rmtree(directory)
 
     if not os.path.exists(directory):
         os.makedirs(directory)
